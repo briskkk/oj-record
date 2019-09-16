@@ -628,6 +628,309 @@ class Solution:
         nums1[:p2+1] = nums2[:p2+1]
 ```
 
+### 94. 二叉树的中序遍历
+
+* 解题
+
+1. 颜色标注法
+
+**使用颜色标记节点的状态，新节点为白色，已访问的节点为灰色。**
+**如果遇到的节点为白色，则将其标记为灰色，然后将其右子节点、自身、左子节点依次入栈。**
+**如果遇到的节点为灰色，则将节点的值输出。**
+
+```python
+class Solution:
+    def inorderTraversal(self, root: TreeNode) -> List[int]:
+        WHITE, GRAY = 0, 1
+        res = []
+        stack = [(WHITE, root)]
+        while stack:
+            color, node = stack.pop()
+            if node is None: continue
+            if color == WHITE:
+                stack.append((WHITE, node.right))
+                stack.append((GRAY, node))
+                stack.append((WHITE, node.left))
+            else:
+                res.append(node.val)
+        return res
+```
+
+2. 分治法
+
+```python
+class Solution:
+    def inorderTraversal(self, root: TreeNode) -> List[int]:
+        if root is None:
+            return []
+        return self.inorderTraversal(root.left) + [root.val] + self.inorderTraversal(root.right)
+```
+
+
+
+### 96. 不同的二叉搜索树
+
+给定一个整数 *n*，求以 1 ... *n* 为节点组成的二叉搜索树有多少种？
+
+```
+输入：3
+输出：5
+```
+
+* 解题：
+
+BST的个数只与有序数列的大小有关，而与具体的值没关系（例如：123和456的BST个数相同）
+
+```python
+class Solution:
+    def numTrees(self, n: int) -> int:
+        if n < 0:
+            return -1
+        count = [0]*(n+1)
+        count[0] = 1
+        for i in range(1,n+1):
+            for j in range(i):
+                count[i] += count[j] * count[i-j-1]
+        return count[n]
+```
+
+
+
+### 102. 二叉树的层次遍历
+
+给定一个二叉树，返回其按层次遍历的节点值。 （即逐层地，从左到右访问所有节点）。
+
+例如:
+给定二叉树: `[3,9,20,null,null,15,7]`
+
+```
+[
+  [3],
+  [9,20],
+  [15,7]
+]
+```
+
+* 解题
+
+```python
+class Solution:
+    def levelOrder(self, root: TreeNode) -> List[List[int]]:
+        levels = []
+        if not root:return levels
+        def helper(node,level):
+            if len(levels) == level:
+                levels.append([])
+            levels[level].append(node.val)
+            if node.left:
+                helper(node.left,level+1)
+            if node.right:
+                helper(node.right,level+1)
+        helper(root,0)
+        return levels
+```
+
+### 103. 二叉树的最大深度
+
+* 解题
+
+1. 迭代
+
+```python
+class Solution:
+    def maxDepth(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """ 
+        stack = []
+        if root is not None:
+            stack.append((1, root))
+        
+        depth = 0
+        while stack != []:
+            current_depth, root = stack.pop()
+            if root is not None:
+                depth = max(depth, current_depth)
+                stack.append((current_depth + 1, root.left))
+                stack.append((current_depth + 1, root.right))
+        
+        return depth
+```
+
+2. 递归
+
+```python
+class Solution:
+    def maxDepth(self, root: TreeNode) -> int:
+        if not root:return 0
+        left_heights = self.maxDepth(root.left)
+        right_heights = self.maxDepth(root.right)
+        return max(left_heights,right_heights)+1
+```
+
+
+
+### 107. 二叉树的层次遍历2
+
+给定一个二叉树，返回其节点值自底向上的层次遍历。 （即按从叶子节点所在层到根节点所在的层，逐层从左向右遍历）
+
+给定二叉树 `[3,9,20,null,null,15,7]`
+
+```
+   3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+返回其自底向上的层次遍历为：
+
+```
+[
+  [15,7],
+  [9,20],
+  [3]
+]
+```
+
+* 解题
+
+```python
+class Solution:
+    def levelOrderBottom(self, root: TreeNode) -> List[List[int]]:
+        levels = []
+        if not root:return levels
+        def helper(node,level):
+            if len(levels) == level:
+                levels.append([])
+            levels[level].append(node.val)
+            if node.left:
+                helper(node.left,level+1)
+            if node.right:
+                helper(node.right,level+1)
+        helper(root,0)
+        return levels[::-1]
+```
+
+
+
+### 136. 只出现一次的数字
+
+给定一个**非空**整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+```
+输入: [2,2,1]
+输出: 1
+
+输入: [4,1,2,1,2]
+输出: 4
+```
+
+* Solution:
+
+1. 
+
+```python
+class Solution:
+    def singleNumber(self, nums: List[int]) -> int:
+        dic = dict()
+        for num in nums:
+            if num not in dic:
+                dic[num] = 1
+            else:
+                del dic[num]
+        for i in dic.keys():
+            return i
+```
+
+2. 
+
+### 144. 二叉树的前序遍历
+
+给定一个二叉树，返回它的 *前序* 遍历。
+
+* 解题：
+
+1. 分治法：递归
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution:
+    def preorderTraversal(self, root: TreeNode) -> List[int]:
+        if root == None:
+            return []
+        return [root.val] + self.preorderTraversal(root.left)+self.preorderTraversal(root.right)
+```
+
+2. 迭代：用栈来保存每个树节点，再用一个列表来保存树的val
+
+```python
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution:
+    def preorderTraversal(self, root: TreeNode) -> List[int]:
+        if root is None:
+            return []
+        res = []
+        s = []
+        s.append(root)
+        while s:
+            root = s.pop()
+            res.append(root.val)
+            if root.right is not None:
+                s.append(root.right)
+            if root.left is not None:
+                s.append(root.left)
+        return res
+```
+
+### 145. 二叉树的后序遍历
+
+* 解题
+
+1. 分治
+
+```python
+class Solution:
+    def postorderTraversal(self, root: TreeNode) -> List[int]:
+        if root is None:
+            return []
+        return self.postorderTraversal(root.left) + self.postorderTraversal(root.right)+[root.val]
+```
+
+2. 颜色标注法
+
+```python
+class Solution:
+    def postorderTraversal(self, root: TreeNode) -> List[int]:
+        WHITE,GREY = 0,1
+        res = []
+        stack = [(WHITE,root)]
+        while stack:
+            color,node = stack.pop()
+            if node is None:continue
+            if color == WHITE:
+                stack.append((GREY,node))
+                stack.append((WHITE,node.right))
+                stack.append((WHITE,node.left))
+            else:
+                res.append(node.val)
+        return res
+```
+
 
 
 ### 162.* 寻找峰值
@@ -685,6 +988,134 @@ class Solution(object):
 
 ```
 
+### 172. 阶乘后的0
+
+给定一个整数 n，返回 n! 结果尾数中零的数量。
+
+```
+示例 1:
+
+输入: 3
+输出: 0
+解释: 3! = 6, 尾数中没有零。
+示例 2:
+
+输入: 5
+输出: 1
+解释: 5! = 120, 尾数中有 1 个零.
+```
+
+说明: 你算法的时间复杂度应为 O(log n) 。
+
+* 解题：计算质因数位5的个数
+
+```python
+class Solution:
+    def trailingZeroes(self, n: int) -> int:
+        if n < 0:
+            return -1
+        count = 0
+        while n > 0:
+            n //= 5
+            count += n
+        return count
+```
+
+### 202. 快乐数
+
+编写一个算法来判断一个数是不是“快乐数”。
+
+一个“快乐数”定义为：对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和，然后重复这个过程直到这个数变为 1，也可能是无限循环但始终变不到 1。如果可以变为 1，那么这个数就是快乐数。
+
+```
+输入: 19
+输出: true
+解释: 
+12 + 92 = 82
+82 + 22 = 68
+62 + 82 = 100
+12 + 02 + 02 = 1
+```
+
+* 解题：
+
+如果一个数不是快乐数的话，那么必然会出现循环的，判断是不是1引起的循环。
+
+1. 数学计算
+
+```python
+class Solution:
+    def squresum(self,n):
+        res = 0
+        while n > 0:
+            bit = n % 10
+            res += bit*bit
+            n = n//10
+        return res
+    def isHappy(self, n: int) -> bool:
+        slow,fast = n,self.squresum(n)
+        while slow != fast:
+            slow = self.squresum(slow)
+            fast = self.squresum(fast)
+            fast = self.squresum(fast)
+        return slow == 1
+        
+```
+
+2. 字符串计算
+
+```python
+class Solution:
+    def isHappy(self, n: int) -> bool:
+        n = str(n)
+        slow = n
+        fast = str(sum(int(i) ** 2 for i in n))
+        while slow != fast:
+            slow = str(sum(int(i) ** 2 for i in slow))
+            fast = str(sum(int(i) ** 2 for i in fast))
+            fast = str(sum(int(i) ** 2 for i in fast))
+        return slow == "1"
+```
+
+### 233.*  数字1的个数
+
+给定一个整数 n，计算所有小于等于 n 的非负整数中数字 1 出现的个数。
+
+```
+输入: 13
+输出: 6 
+解释: 数字 1 出现在以下数字中: 1, 10, 11, 12, 13 。
+```
+
+* 解题：
+
+Python采用字符串处理的方法会超时
+
+```python
+class Solution:
+    def __init__(self):
+        self.map = {0:0, 9:1}
+        for i in range(1, 10):
+            self.map[10**(i+1)-1] = 10**i+10*(self.map[10**i-1])
+    
+    def countDigitOne(self, n):
+        if n<=0:
+            return 0
+        i = 1
+        while i*10<=n:
+            i *= 10
+        return int(self.count(n ,i))
+
+    def count(self, n, i):
+        if n==0:
+            return 0
+        else:
+            while i>n:
+                i /= 10
+            n_1 = self.map[i-1]
+            return min(i, n-i+1)+n//i*n_1+self.count(n%i, i/10)
+```
+
 
 
 ### 240. 搜索二维矩阵
@@ -735,6 +1166,27 @@ class Solution:
             else:
                 col -= 1
         return occ
+```
+
+
+
+### 263. 丑数
+
+编写一个程序判断给定的数是否为丑数。
+
+丑数就是只包含质因数 `2, 3, 5` 的**正整数**。
+
+* 解题：递归
+
+```python
+class Solution:
+    def isUgly(self, num: int) -> bool:
+        if num <= 0:
+            return False
+        for i in [2,3,5]:
+            while num % i == 0:
+                num //= i
+        return num ==1
 ```
 
 
@@ -962,6 +1414,104 @@ class Solution:
                 right -= 1
         return left
 ```
+
+### Lintcode 140. Fast Power
+
+Calculate the **an % b** where a, b and n are all 32bit non-negative integers.
+
+```
+For 231 % 3 = 2
+
+For 1001000 % 1000 = 0
+
+```
+
+时间复杂度：O(logn)
+
+* 解题
+
+递归，根据公式`(a*b)%p = ((a%p)*(b%p))%p`
+
+```python
+class Solution:
+    """
+    @param a: A 32bit integer
+    @param b: A 32bit integer
+    @param n: A 32bit integer
+    @return: An integer
+    """
+    def fastPower(self, a, b, n):
+        # write your code here
+        if n == 1:
+            return a % b
+        elif n == 0:
+            return 1 % b
+        elif n < 0:
+            return -1
+        
+        num = self.fastPower(a,b,n//2)
+        num = (num*num)%b
+        if n % 2 == 1:
+            num = (num * a)%b
+        return num
+```
+
+
+
+### lintcode 183. Wood Cut
+
+Given n pieces of wood with length `L[i]` (integer array). Cut them into small pieces to guarantee you could have equal or more than k pieces with the same length. What is the longest length you can get from the n pieces of wood? Given L & k, return the maximum length of the small pieces.
+
+### **Example**
+
+**Example 1**
+
+```plain
+Input:
+L = [232, 124, 456]
+k = 7
+Output: 114
+Explanation: We can cut it into 7 pieces if any piece is 114cm long, however we can't cut it into 7 pieces if any piece is 115cm long.
+```
+
+**Example 2**
+
+```plain
+Input:
+L = [1, 2, 3]
+k = 7
+Output: 0
+Explanation: It is obvious we can't make it.
+```
+
+* Solution:
+
+### lintcode 365. 统计二进制表示中1的个数
+
+注意python中负数的统计
+
+```python
+class Solution:
+    """
+    @param: num: An integer
+    @return: An integer
+    """
+    def countOnes(self, num):
+        # write your code here
+        count = 0
+        flag = False
+        if num < 0:
+            num = abs(num)-1
+            flag = True
+        while num > 0:
+            num = num&(num-1)
+            count += 1 
+        if flag:
+            count = 32-count
+        return count
+```
+
+2. 
 
 ### lintcode 373. Partition Array by Odd and Even
 
