@@ -336,6 +336,34 @@ class Solution:
         return prev_person
 ```
 
+### 39. 组合总和
+
+给定一个无重复元素的数组 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。
+
+candidates 中的数字可以无限制重复被选取。
+
+说明：
+
+所有数字（包括 target）都是正整数。
+解集不能包含重复的组合。 
+
+```python
+输入: candidates = [2,3,6,7], target = 7,
+所求解集为:
+[
+  [7],
+  [2,2,3]
+]
+
+输入: candidates = [2,3,5], target = 8,
+所求解集为:
+[
+  [2,2,2,2],
+  [2,3,3],
+  [3,5]
+]
+```
+
 
 
 ### 44. 通配符匹配
@@ -568,7 +596,105 @@ class Solution:
         return left < row * col and matrix[left // col][left % col] == target
 ```
 
+### 77. 组合
 
+给定两个整数 *n* 和 *k*，返回 1 ... *n* 中所有可能的 *k* 个数的组合。
+
+```
+输入: n = 4, k = 2
+输出:
+[
+  [2,4],
+  [3,4],
+  [2,3],
+  [1,2],
+  [1,3],
+  [1,4],
+]
+```
+
+* 解题
+
+1. 
+
+```python
+from itertools import combinations
+class Solution:
+    def combine(self, n: int, k: int) -> List[List[int]]:
+        res = []
+        for i in range(1,n+1):
+            res.append(i)
+        return list(combinations(res,k))
+```
+
+2. 
+
+```python
+class Solution:
+    def combine(self, n: int, k: int) -> List[List[int]]:
+        res = []
+        def backtrack(i, k, tmp):
+            if k == 0:
+                res.append(tmp)
+                return 
+            for j in range(i, n + 1):
+                backtrack(j+1, k-1, tmp + [j])
+        backtrack(1, k, [])
+        return res
+
+```
+
+
+
+### 78. 子集
+
+给定一组**不含重复元素**的整数数组 *nums*，返回该数组所有可能的子集（幂集）。
+
+**说明：**解集不能包含重复的子集。
+
+```python
+输入: nums = [1,2,3]
+输出:
+[
+  [3],
+  [1],
+  [2],
+  [1,2,3],
+  [1,3],
+  [2,3],
+  [1,2],
+  []
+]
+```
+
+* 解题
+
+1. Python内置组合函数`itertools.combinations`
+
+```python
+from itertools import combinations
+class Solution:
+    def subsets(self, nums: List[int]) -> List[List[int]]:
+        res = []
+        for i in range(len(nums)+1):
+            for j in combinations(nums,i):
+                res.append(list(j))
+        return res
+```
+
+2. 递归：构造辅助函数
+
+```python
+class Solution:
+    def subsets(self, nums: List[int]) -> List[List[int]]:
+        res = []
+        self.helper(sorted(nums),res,[])
+        return res
+    def helper(self,vals,res,tmp):
+        res.append(tmp[:])
+        for i,val in enumerate(vals):
+            self.helper(vals[i+1:],res,tmp+[val])
+```
 
 
 
@@ -627,6 +753,61 @@ class Solution:
             p -= 1
         nums1[:p2+1] = nums2[:p2+1]
 ```
+
+### 90. 子集2
+
+如果整数数组中可能包含有重复元素，返回该数组所有可能的子集
+
+```
+输入: [1,2,2]
+输出:
+[
+  [2],
+  [1],
+  [1,2,2],
+  [2,2],
+  [1,2],
+  []
+]
+```
+
+* 解题
+
+1. 统计数组频次并统计
+
+```python
+from collections import Counter
+class Solution:
+    def subsetsWithDup(self, nums: List[int]) -> List[List[int]]:
+        dic = Counter(nums)
+        res = [[]]
+        for i,v in dic.items():
+            tmp = res.copy()
+            for j in res:
+                tmp.extend(j + [i]*(k+1) for k in range(v))
+            res = tmp
+        return res
+```
+
+2. 迭代（没太看懂）
+
+```python
+class Solution:
+    def subsetsWithDup(self, nums: List[int]) -> List[List[int]]:
+        if not nums: return []
+        nums.sort()
+        res = [[]]
+        cur = []
+        for i in range(len(nums)):
+            if i > 0 and nums[i-1] ==nums[i]:
+                cur = [tmp + [nums[i]] for tmp in cur]
+            else:
+                cur = [tmp + [nums[i]] for tmp in res]
+            res += cur
+        return res
+```
+
+
 
 ### 94. 二叉树的中序遍历
 
@@ -812,6 +993,193 @@ class Solution:
                 helper(node.right,level+1)
         helper(root,0)
         return levels[::-1]
+```
+
+
+
+### 110. 平衡二叉树
+
+给定一个二叉树，判断它是否是高度平衡的二叉树。
+
+本题中，一棵高度平衡二叉树定义为：
+
+> 一个二叉树*每个节点* 的左右两个子树的高度差的绝对值不超过1。
+
+* 解题
+
+从底至顶（提前阻断法）
+
+* 对二叉树做深度优先遍历DFS，递归过程中：
+  * 终止条件：当DFS越过叶子节点时，返回高度0
+  * 返回值：
+    * 从底至顶，返回以每个节点root为根节点的子树最大高度（左右子树最大的高度值加1）
+    * 当发现有1例高度差大于1的情况时，代表此树不是平衡树，返回-1
+
+```python
+class Solution:    
+    def isBalanced(self,root):
+        return self.depth(root) != -1
+    def depth(self,root):
+        if not root: return 0
+        left = self.depth(root.left)
+        if left == -1:return -1
+        right = self.depth(root.right)
+        if right == -1:return -1
+        return max(left,right )+1 if abs(left-right) <2 else -1
+```
+
+### 111. 二叉树的最小深度
+
+给定一个二叉树，找出其最小深度。
+
+最小深度是从根节点到最近叶子节点的最短路径上的节点数量。
+
+**说明:** 叶子节点是指没有子节点的节点。
+
+```
+给定二叉树 [3,9,20,null,null,15,7],
+
+    3
+   / \
+  9  20
+    /  \
+   15   7
+返回它的最小深度  2.
+```
+
+* 解题
+
+递归
+
+```python
+class Solution:
+    def minDepth(self, root: TreeNode) -> int:
+        if not root:return 0
+        children = [root.left,root.right]
+        if not any(children):return 1
+        min_depth = float("inf")
+        for c in children:
+            if c:
+                min_depth = min(self.minDepth(c),min_depth)
+        return min_depth+1
+```
+
+### 120. 三角形最小路径和
+
+给定一个三角形，找出自顶向下的最小路径和。每一步只能移动到下一行中相邻的结点上。
+
+例如，给定三角形：
+
+```
+[
+     [2],
+    [3,4],
+   [6,5,7],
+  [4,1,8,3]
+]
+自顶向下的最小路径和为 11（即，2 + 3 + 5 + 1 = 11）。
+```
+
+* 解题
+
+```python
+class Solution:
+    def minimumTotal(self, triangle: List[List[int]]) -> int:
+        mini,M = triangle[-1],len(triangle)
+        for i in range(M-2,-1,-1):
+            for j in range(len(triangle[i])):
+                mini[j] = triangle[i][j] + min(mini[j],mini[j+1])
+        return mini[0]
+```
+
+
+
+### 124.* 二叉树中的最大路径和
+
+* 解题: 不会
+
+```python
+class Solution:
+    def maxPathSum(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        def max_gain(node):
+            nonlocal max_sum
+            if not node:
+                return 0
+
+            # max sum on the left and right sub-trees of node
+            left_gain = max(max_gain(node.left), 0)
+            right_gain = max(max_gain(node.right), 0)
+            
+            # the price to start a new path where `node` is a highest node
+            price_newpath = node.val + left_gain + right_gain
+            
+            # update max_sum if it's better to start a new path
+            max_sum = max(max_sum, price_newpath)
+        
+            # for recursion :
+            # return the max gain if continue the same path
+            return node.val + max(left_gain, right_gain)
+   
+        max_sum = float('-inf')
+        max_gain(root)
+        return max_sum
+
+```
+
+### 131. 分割回文串
+
+给定一个字符串 *s*，将 *s* 分割成一些子串，使每个子串都是回文串。
+
+返回 *s* 所有可能的分割方案。
+
+```
+输入: "aab"
+输出:
+[
+  ["aa","b"],
+  ["a","a","b"]
+]
+```
+
+* 解题
+
+思路：遍历字符串s中从开始位置到i，如果s[:i+1]是回文串，把S[:i+1]添加到临时数组中，继续dfs其余s[i+1:]。返回的条件是需要dfs的字符串长度为空，此时把这种情况的临时数组添加到最终的结果数组中。注意str是不可变字符串，所以我们要用下标来操作，而不能像list一样修改数组。
+
+```python
+class Solution:
+    def partition(self, s: str) -> List[List[str]]:
+        def dfs(s, path, res):
+            if not s:
+                res.append(path)
+                return
+            for i in range(len(s)):
+                if s[:i+1] == s[i::-1]:
+                    dfs(s[i+1:], path+[s[:i+1]], res)    
+        tmp,res = [],[]
+        dfs(s, tmp, res)
+        return res
+```
+
+2. 
+
+```python
+class Solution:
+    def partition(self, s: str) -> List[List[str]]:
+        res = []
+        
+        def helper(s, tmp):
+            if not s:
+                res.append(tmp)
+            for i in range(1, len(s) + 1):
+                if s[:i] == s[:i][::-1]:
+                    helper(s[i:], tmp + [s[:i]])
+        helper(s, [])
+        return res
+
 ```
 
 
@@ -1117,6 +1485,8 @@ class Solution:
 ```
 
 
+
+### 236.* 二叉树的最近公共祖先
 
 ### 240. 搜索二维矩阵
 
